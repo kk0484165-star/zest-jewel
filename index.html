@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Zest Jewel</title>
+<style>
+body{font-family:Arial;background:#fff8f0;text-align:center}
+h1{background:#d4af37;color:white;padding:15px}
+.product{background:white;margin:15px;padding:15px;display:inline-block;width:220px;border-radius:10px;box-shadow:0 0 10px gray}
+img{width:100%;height:150px;object-fit:cover;border-radius:10px}
+button{background:green;color:white;border:none;padding:8px;border-radius:5px;margin:5px;cursor:pointer}
+.delete{background:red}
+input{padding:5px;margin:5px}
+</style>
+</head>
+<body>
+
+<h1>💎 Zest Jewel Store 💎</h1>
+
+<h2>Add Product</h2>
+<input type="text" id="pname" placeholder="Product Name">
+<input type="number" id="pprice" placeholder="Price">
+<input type="file" id="pimg">
+<button onclick="addProduct()">Add</button>
+
+<h2>Products</h2>
+<div id="products"></div>
+
+<h2 id="cart">Cart Total: ₹0</h2>
+
+<script>
+let products = JSON.parse(localStorage.getItem("products")) || [];
+let total = 0;
+
+function saveData(){
+localStorage.setItem("products",JSON.stringify(products));
+}
+
+function displayProducts(){
+document.getElementById("products").innerHTML="";
+products.forEach((p,index)=>{
+let div=document.createElement("div");
+div.className="product";
+div.innerHTML=`
+<img src="${p.img}">
+<h3>${p.name}</h3>
+<p>Price: ₹${p.price}</p>
+<button onclick="addToCart(${p.price})">Buy</button>
+<button class="delete" onclick="deleteProduct(${index})">Delete</button>
+`;
+document.getElementById("products").appendChild(div);
+});
+}
+
+function addProduct(){
+let name=document.getElementById("pname").value;
+let price=document.getElementById("pprice").value;
+let file=document.getElementById("pimg").files[0];
+
+if(!name||!price||!file){alert("Fill all details");return;}
+
+let reader=new FileReader();
+reader.onload=function(e){
+products.push({name:name,price:price,img:e.target.result});
+saveData();
+displayProducts();
+};
+reader.readAsDataURL(file);
+
+document.getElementById("pname").value="";
+document.getElementById("pprice").value="";
+document.getElementById("pimg").value="";
+}
+
+function deleteProduct(index){
+products.splice(index,1);
+saveData();
+displayProducts();
+}
+
+function addToCart(price){
+total+=parseInt(price);
+document.getElementById("cart").innerText="Cart Total: ₹"+total;
+}
+
+displayProducts();
+</script>
+
+</body>
+</html>
