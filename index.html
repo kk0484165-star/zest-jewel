@@ -175,7 +175,12 @@
       const el = document.createElement("div");
       el.className = "card p";
       el.innerHTML = `
-        <img src="${esc(p.imgUrl)}" alt="product" onerror="this.src=''; this.style.background='#ddd';">
+        <a href="${esc(p.imgUrl)}" target="_blank">
+  <img src="${esc(p.imgUrl)}"
+       alt="product"
+       style="width:100%;border-radius:10px;cursor:pointer;"
+       onerror="this.src=''; this.style.background='#ddd';">
+</a>
         <div style="font-weight:900;margin-top:10px">${esc(p.name)}</div>
         <div style="margin-top:6px"><b>₹${esc(p.price)}</b></div>
         <div class="muted" style="margin-top:6px">${esc(p.desc || "")}</div>
@@ -303,5 +308,6 @@ window.open(waUrl, "_blank");
 
 </body>
 </html>
+
 
 
