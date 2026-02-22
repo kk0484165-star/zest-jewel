@@ -37,7 +37,25 @@
   position:fixed;
   inset:0;
   background:url('LOGO.jpeg') no-repeat center;
-  background-size:450px;
+  </head>
+<body>
+
+<div id="logoPage" style="height:100vh; display:flex; align-items:center; justify-content:center; background:#fff8f0;">
+  <div style="text-align:center;">
+    <img src="LOGO.jpeg" style="width:250px; margin-bottom:20px;">
+    <button onclick="showMain()" style="padding:10px 20px;">Enter Store</button>
+  </div>
+</div>
+
+<div id="mainPage" style="display:none;">
+      </div>
+
+<script>
+function showMain(){
+  document.getElementById("logoPage").style.display="none";
+  document.getElementById("mainPage").style.display="block";
+}
+</script>
   opacity:0.06;
   pointer-events:none;
   z-index:-1;
@@ -331,6 +349,7 @@ window.open(waUrl, "_blank");
 
 </body>
 </html>
+
 
 
 
