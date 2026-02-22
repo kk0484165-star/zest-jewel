@@ -102,6 +102,7 @@
 
 <!-- Firebase (MODULE) -->
 <script type="module">
+  const WHATSAPP_NUMBER = "919888727117";
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
   import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
   import {
@@ -234,24 +235,22 @@
   };
 
   // --- CUSTOMER: SELECT PRODUCT ---
-window.selectProduct = (name, price) => {
+window.selectProduct = (name, price, img, desc) => {
+  selected = { name, price, img: img || "", desc: desc || "" };
 
-  const text =
-    "Hello Zest Jewel!\n\n" +
-    "I want to order:\n\n" +
-    "Product: " + name + "\n" +
-    "Price: ₹" + price + "\n\n" +
-    "Please confirm availability.";
+  document.getElementById("selectedProduct").value = `${name} (₹${price})`;
+  orderMsg.textContent = "Selected ✅ Ab details fill karke Submit Order karo.";
 
-  const url =
-    "https://wa.me/" + WHATSAPP_NUMBER +
-    "?text=" + encodeURIComponent(text);
+  window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
 
-  window.open(url, "_blank");
   };
 
   // --- CUSTOMER: SUBMIT ORDER ---
   window.submitOrder = async () => {
+    if(!selected){
+  alert("Please Buy/Select a product first!");
+  return;
+}
     const nm = document.getElementById("custName").value.trim();
     const ph = document.getElementById("custPhone").value.trim();
     const ad = document.getElementById("custAddress").value.trim();
@@ -276,6 +275,21 @@ window.selectProduct = (name, price) => {
         createdAt: serverTimestamp()
       });
       orderMsg.textContent = "Order submitted ✅ (Admin Firebase → Firestore → orders me dekhega)";
+      const waText =
+  "Hello Zest Jewel!\n\n" +
+  "New Order Received ✅\n\n" +
+  "Customer Name: " + nm + "\n" +
+  "Customer Mobile: " + ph + "\n" +
+  "Address: " + (ad || "-") + "\n\n" +
+  "Product: " + selected.name + "\n" +
+  "Price: ₹" + (selected?.price || "-") + "\n\n" +
+  "Please confirm availability.";
+
+const waUrl =
+  "https://wa.me/" + WHATSAPP_NUMBER +
+  "?text=" + encodeURIComponent(waText);
+
+window.open(waUrl, "_blank");
       document.getElementById("custName").value = "";
       document.getElementById("custPhone").value = "";
       document.getElementById("custAddress").value = "";
@@ -285,9 +299,9 @@ window.selectProduct = (name, price) => {
       orderMsg.textContent = "Order error: " + e.message;
     }
   };
-  const WHATSAPP_NUMBER = "919888727117";
 </script>
 
 </body>
 </html>
+
 
