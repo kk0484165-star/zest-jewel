@@ -4,9 +4,28 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Zest Jewel Store</title>
-  <style>
+  <style> /* WELCOME SCREEN */
+#welcomePage{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100vh;
+  background:#fff8f0;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  z-index:999999 !important;
+}
   body{font-family:Arial, sans-serif;background:#fff8f0;margin:0; position:relative;}
     body::before{
+      <div id="welcomePage">
+  <img src="LOGO.jpeg" alt="Zest Jewel" style="width:260px; margin-bottom:20px;">
+  <button onclick="enterStore()" style="padding:12px 25px; font-size:16px; border-radius:12px; border:none; background:#2e7d32; color:#fff; cursor:pointer;">
+    Enter Store
+  </button>
+</div>
   content:"";
   position:fixed;
   inset:0;
@@ -372,6 +391,7 @@ window.open(waUrl, "_blank");
 
 </body>
 </html>
+
 
 
 
