@@ -1,88 +1,281 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Zest Jewel</title>
-<style>
-body{font-family:Arial;background:#fff8f0;text-align:center}
-h1{background:#d4af37;color:white;padding:15px}
-.product{background:white;margin:15px;padding:15px;display:inline-block;width:220px;border-radius:10px;box-shadow:0 0 10px gray}
-img{width:100%;height:150px;object-fit:cover;border-radius:10px}
-button{background:green;color:white;border:none;padding:8px;border-radius:5px;margin:5px;cursor:pointer}
-.delete{background:red}
-input{padding:5px;margin:5px}
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Zest Jewel Store</title>
+  <style>
+    body{font-family:Arial, sans-serif;background:#fff8f0;margin:0}
+    header{background:#d4af37;color:#fff;padding:14px 16px;text-align:center;font-size:22px;font-weight:800}
+    .wrap{max-width:1100px;margin:0 auto;padding:16px}
+    .card{background:#fff;border-radius:14px;box-shadow:0 8px 18px rgba(0,0,0,.12);padding:14px;margin:12px 0}
+    .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+    input,button{padding:10px 12px;border-radius:10px;border:1px solid #ddd;font-size:14px}
+    input{flex:1;min-width:190px}
+    button{border:none;background:green;color:#fff;cursor:pointer}
+    button.secondary{background:#333}
+    button.danger{background:#d11a2a}
+    .grid{display:flex;flex-wrap:wrap;gap:12px;justify-content:flex-start}
+    .p{width:250px}
+    .p img{width:100%;height:170px;object-fit:cover;border-radius:12px;background:#eee}
+    .muted{color:#666;font-size:12px}
+    .hide{display:none}
+    .tag{display:inline-block;background:#f3f3f3;border-radius:999px;padding:4px 10px;font-size:12px}
+    .title{font-size:18px;font-weight:800;margin:0}
+  </style>
 </head>
 <body>
+<header>💎 Zest Jewel Store 💎</header>
 
-<h1>💎 Zest Jewel Store 💎</h1>
+<div class="wrap">
 
-<h2>Add Product</h2>
-<input type="text" id="pname" placeholder="Product Name">
-<input type="number" id="pprice" placeholder="Price">
-<input type="file" id="pimg">
-<button onclick="addProduct()">Add</button>
+  <!-- PRODUCTS (CUSTOMER VIEW) -->
+  <div class="card">
+    <div class="row" style="justify-content:space-between">
+      <div>
+        <p class="title">Products</p>
+        <div class="muted">Customers ko yahi products dikhenge (Firebase Firestore se).</div>
+      </div>
+      <div class="tag" id="statusTag">Customer view</div>
+    </div>
 
-<h2>Products</h2>
-<div id="products"></div>
+    <div id="products" class="grid" style="margin-top:12px;"></div>
+  </div>
 
-<h2 id="cart">Cart Total: ₹0</h2>
+  <!-- ORDER / ENQUIRY -->
+  <div class="card">
+    <p class="title">Order / Enquiry</p>
+    <div class="muted">Customer Buy pe click kare → product select ho jayega → details fill karke Submit.</div>
 
-<script>
-let products = JSON.parse(localStorage.getItem("products")) || [];
-let total = 0;
+    <div class="row" style="margin-top:10px;">
+      <input id="custName" placeholder="Customer Name" />
+      <input id="custPhone" placeholder="Mobile Number" />
+      <input id="custAddress" placeholder="Address (optional)" />
+    </div>
 
-function saveData(){
-localStorage.setItem("products",JSON.stringify(products));
-}
+    <div class="row" style="margin-top:10px;">
+      <input id="selectedProduct" placeholder="Selected product (Buy pe click karo)" readonly />
+      <button class="secondary" onclick="submitOrder()">Submit Order</button>
+    </div>
 
-function displayProducts(){
-document.getElementById("products").innerHTML="";
-products.forEach((p,index)=>{
-let div=document.createElement("div");
-div.className="product";
-div.innerHTML=`
-<img src="${p.img}">
-<h3>${p.name}</h3>
-<p>Price: ₹${p.price}</p>
-<button onclick="addToCart(${p.price})">Buy</button>
-<button class="delete" onclick="deleteProduct(${index})">Delete</button>
-`;
-document.getElementById("products").appendChild(div);
-});
-}
+    <div class="muted" id="orderMsg"></div>
+  </div>
 
-function addProduct(){
-let name=document.getElementById("pname").value;
-let price=document.getElementById("pprice").value;
-let file=document.getElementById("pimg").files[0];
+  <!-- ADMIN LOGIN -->
+  <div class="card">
+    <p class="title">Admin Login</p>
+    <div class="muted">Sirf aap (admin) login karke product add/delete kar paoge.</div>
 
-if(!name||!price||!file){alert("Fill all details");return;}
+    <div class="row" style="margin-top:10px;">
+      <input id="email" placeholder="Admin Email" />
+      <input id="pass" type="password" placeholder="Password" />
+      <button onclick="login()">Login</button>
+      <button class="secondary" onclick="logout()">Logout</button>
+    </div>
 
-let reader=new FileReader();
-reader.onload=function(e){
-products.push({name:name,price:price,img:e.target.result});
-saveData();
-displayProducts();
-};
-reader.readAsDataURL(file);
+    <div class="muted" id="authMsg"></div>
+  </div>
 
-document.getElementById("pname").value="";
-document.getElementById("pprice").value="";
-document.getElementById("pimg").value="";
-}
+  <!-- ADMIN PANEL -->
+  <div class="card hide" id="adminPanel">
+    <p class="title">Add Product (Admin Only)</p>
+    <div class="muted">
+      Image URL direct hona chahiye (ending .jpg / .png / .webp).
+      Google image open → Right click → Copy image address.
+    </div>
 
-function deleteProduct(index){
-products.splice(index,1);
-saveData();
-displayProducts();
-}
+    <div class="row" style="margin-top:10px;">
+      <input id="pname" placeholder="Product Name" />
+      <input id="pprice" type="number" placeholder="Price" />
+      <input id="pimg" placeholder="Image URL (direct)" />
+    </div>
 
-function addToCart(price){
-total+=parseInt(price);
-document.getElementById("cart").innerText="Cart Total: ₹"+total;
-}
+    <div class="row" style="margin-top:10px;">
+      <input id="pdesc" placeholder="Description (optional)" />
+      <button onclick="addProduct()">Add Product</button>
+    </div>
 
-displayProducts();
+    <div class="muted" id="adminMsg"></div>
+  </div>
+
+</div>
+
+<!-- Firebase (MODULE) -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+  import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
+  import {
+    getFirestore, collection, addDoc, onSnapshot, query, orderBy,
+    serverTimestamp, deleteDoc, doc
+  } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+  // ✅ YOUR FIREBASE CONFIG (already provided by you)
+  const firebaseConfig = {
+    apiKey: "AIzaSyDXRGjrOmlWGB5I3fZCBpFj-Rv_RLkHg2s",
+    authDomain: "zest-jewel.firebaseapp.com",
+    projectId: "zest-jewel",
+    storageBucket: "zest-jewel.firebasestorage.app",
+    messagingSenderId: "350610946972",
+    appId: "1:350610946972:web:8f550c0584350455712659"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  const productsDiv = document.getElementById("products");
+  const adminPanel = document.getElementById("adminPanel");
+  const statusTag = document.getElementById("statusTag");
+  const authMsg = document.getElementById("authMsg");
+  const adminMsg = document.getElementById("adminMsg");
+  const orderMsg = document.getElementById("orderMsg");
+
+  let isAdmin = false;
+  let selected = null;
+
+  function esc(s){
+    return (s ?? "").toString().replace(/[<>&"]/g, c => ({ "<":"&lt;",">":"&gt;","&":"&amp;",'"':"&quot;" }[c]));
+  }
+  function isLikelyImageUrl(url){
+    return /^https?:\/\/.+\.(jpg|jpeg|png|webp|gif)(\?.*)?$/i.test(url.trim());
+  }
+
+  // --- AUTH ---
+  window.login = async () => {
+    const email = document.getElementById("email").value.trim();
+    const pass = document.getElementById("pass").value.trim();
+    authMsg.textContent = "Logging in...";
+    try{
+      await signInWithEmailAndPassword(auth, email, pass);
+      authMsg.textContent = "Login success ✅";
+    }catch(e){
+      authMsg.textContent = "Login error: " + e.message;
+    }
+  };
+
+  window.logout = async () => {
+    await signOut(auth);
+    authMsg.textContent = "Logged out ✅";
+  };
+
+  onAuthStateChanged(auth, (user)=>{
+    isAdmin = !!user;
+    adminPanel.classList.toggle("hide", !isAdmin);
+    statusTag.textContent = isAdmin ? ("Admin: " + user.email) : "Customer view";
+    // products render will automatically update (we use isAdmin in template)
+  });
+
+  // --- PRODUCTS (LIVE LIST) ---
+  const productsQuery = query(collection(db, "products"), orderBy("createdAt", "desc"));
+  onSnapshot(productsQuery, (snap)=>{
+    productsDiv.innerHTML = "";
+    snap.forEach((d)=>{
+      const p = d.data();
+      const el = document.createElement("div");
+      el.className = "card p";
+      el.innerHTML = `
+        <img src="${esc(p.imgUrl)}" alt="product" onerror="this.src=''; this.style.background='#ddd';">
+        <div style="font-weight:900;margin-top:10px">${esc(p.name)}</div>
+        <div style="margin-top:6px"><b>₹${esc(p.price)}</b></div>
+        <div class="muted" style="margin-top:6px">${esc(p.desc || "")}</div>
+        <div class="row" style="margin-top:10px;justify-content:flex-start">
+          <button onclick="selectProduct('${esc(p.name)}','${esc(p.price)}')">Buy</button>
+          ${isAdmin ? `<button class="danger" onclick="delProduct('${d.id}')">Delete</button>` : ""}
+        </div>
+      `;
+      productsDiv.appendChild(el);
+    });
+  });
+
+  // --- ADD PRODUCT (ADMIN ONLY) ---
+  window.addProduct = async () => {
+    if(!auth.currentUser){ alert("Admin login required"); return; }
+
+    const name = document.getElementById("pname").value.trim();
+    const price = document.getElementById("pprice").value.trim();
+    const imgUrl = document.getElementById("pimg").value.trim();
+    const desc = document.getElementById("pdesc").value.trim();
+
+    if(!name || !price || !imgUrl){
+      adminMsg.textContent = "Name, price, Image URL required.";
+      return;
+    }
+    if(!isLikelyImageUrl(imgUrl)){
+      adminMsg.textContent = "Image URL direct hona chahiye (jpg/png/webp).";
+      return;
+    }
+
+    adminMsg.textContent = "Saving...";
+    try{
+      await addDoc(collection(db, "products"), {
+        name, price, imgUrl, desc,
+        createdAt: serverTimestamp()
+      });
+      document.getElementById("pname").value = "";
+      document.getElementById("pprice").value = "";
+      document.getElementById("pimg").value = "";
+      document.getElementById("pdesc").value = "";
+      adminMsg.textContent = "Product added ✅";
+    }catch(e){
+      adminMsg.textContent = "Error: " + e.message;
+    }
+  };
+
+  // --- DELETE PRODUCT (ADMIN ONLY) ---
+  window.delProduct = async (id) => {
+    if(!auth.currentUser){ alert("Admin login required"); return; }
+    if(!confirm("Delete product?")) return;
+    try{
+      await deleteDoc(doc(db, "products", id));
+      alert("Deleted ✅");
+    }catch(e){
+      alert("Delete error: " + e.message);
+    }
+  };
+
+  // --- CUSTOMER: SELECT PRODUCT ---
+  window.selectProduct = (name, price) => {
+    selected = { name, price };
+    document.getElementById("selectedProduct").value = `${name} (₹${price})`;
+    orderMsg.textContent = "Selected ✅ Ab details fill karke Submit karo.";
+    window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+  };
+
+  // --- CUSTOMER: SUBMIT ORDER ---
+  window.submitOrder = async () => {
+    const nm = document.getElementById("custName").value.trim();
+    const ph = document.getElementById("custPhone").value.trim();
+    const ad = document.getElementById("custAddress").value.trim();
+
+    if(!nm || !ph){
+      alert("Name & phone required");
+      return;
+    }
+    if(!selected){
+      alert("Pehle product ke Buy button pe click karke select karo.");
+      return;
+    }
+
+    orderMsg.textContent = "Submitting...";
+    try{
+      await addDoc(collection(db, "orders"), {
+        customerName: nm,
+        phone: ph,
+        address: ad || "",
+        product: selected,
+        status: "new",
+        createdAt: serverTimestamp()
+      });
+      orderMsg.textContent = "Order submitted ✅ (Admin Firebase → Firestore → orders me dekhega)";
+      document.getElementById("custName").value = "";
+      document.getElementById("custPhone").value = "";
+      document.getElementById("custAddress").value = "";
+      document.getElementById("selectedProduct").value = "";
+      selected = null;
+    }catch(e){
+      orderMsg.textContent = "Order error: " + e.message;
+    }
+  };
 </script>
 
 </body>
