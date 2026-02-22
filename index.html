@@ -234,11 +234,20 @@
   };
 
   // --- CUSTOMER: SELECT PRODUCT ---
-  window.selectProduct = (name, price) => {
-    selected = { name, price };
-    document.getElementById("selectedProduct").value = `${name} (₹${price})`;
-    orderMsg.textContent = "Selected ✅ Ab details fill karke Submit karo.";
-    window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+window.selectProduct = (name, price) => {
+
+  const text =
+    "Hello Zest Jewel!\n\n" +
+    "I want to order:\n\n" +
+    "Product: " + name + "\n" +
+    "Price: ₹" + price + "\n\n" +
+    "Please confirm availability.";
+
+  const url =
+    "https://wa.me/" + WHATSAPP_NUMBER +
+    "?text=" + encodeURIComponent(text);
+
+  window.open(url, "_blank");
   };
 
   // --- CUSTOMER: SUBMIT ORDER ---
@@ -276,7 +285,9 @@
       orderMsg.textContent = "Order error: " + e.message;
     }
   };
+  const WHATSAPP_NUMBER = "919888727117";
 </script>
 
 </body>
 </html>
+
