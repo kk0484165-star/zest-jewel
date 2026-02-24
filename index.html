@@ -265,8 +265,8 @@ function showMain(){
       const el = document.createElement("div");
       el.className = "card p";
       el.innerHTML = `
-        <a href="${esc(p.imgUrl)}" target="_blank">
-  <img src="${esc(p.imgUrl)}"
+        <img src="${esc(p.imgUrl || p.img || p.image || p.photo || '')}"
+  <img src="${esc(p.imgUrl || p.img || p.image || p.photo || '')}"
        alt="product"
        style="width:100%;border-radius:10px;cursor:pointer;"
        onerror="this.src=''; this.style.background='#ddd';">
@@ -398,6 +398,7 @@ window.open(waUrl, "_blank");
 
 </body>
 </html>
+
 
 
 
