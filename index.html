@@ -268,27 +268,46 @@ function showMain(){
   // --- PRODUCTS (LIVE LIST) ---
   const productsQuery = query(collection(db, "products"), orderBy("createdAt", "desc"));
   onSnapshot(productsQuery, (snap)=>{
-    productsDiv.innerHTML = "";
-    snap.forEach((d)=>{
-      const p = d.data();
-      const el = document.createElement("div");
-      el.className = "card p";
-      el.innerHTML = `
-        <img src="${esc(p.imgUrl || p.img || p.image || p.photo || '')}"
-  <img src="${esc(p.imgUrl || p.img || p.image || p.photo || '')}"
-       alt="product"
-       style="width:100%;border-radius:10px;cursor:pointer;"
-       onerror="this.src=''; this.style.background='#ddd';">
-</a>
-        <div style="font-weight:900;margin-top:10px">${esc(p.name)}</div>
-        <div style="margin-top:6px"><b>₹${esc(p.price)}</b></div>
-        <div class="muted" style="margin-top:6px">${esc(p.desc || "")}</div>
-        <div class="row" style="margin-top:10px;justify-content:flex-start">
-          <button onclick="selectProduct('${esc(p.name)}','${esc(p.price)}')">Buy</button>
-          ${isAdmin ? `<button class="danger" onclick="delProduct('${d.id}')">Delete</button>` : ""}
-        </div>
-      `;
-      productsDiv.appendChild(el);
+    productsDiv.innerHTML = ""
+    snap.forEach((d) => {
+  const p = d.data();
+
+  // ✅ OLD + NEW fields support
+  const img =
+    (p.imgUrl || p.img || p.image || p.pimg || p.photo || p.pic || "").toString().trim();
+
+  const name = (p.name || "").toString();
+  const price = (p.price ?? "").toString();
+  const desc = (p.desc || p.description || "").toString();
+
+  const el = document.createElement("div");
+  el.className = "card p";
+
+  const safeImg = esc(img);
+
+  el.innerHTML = `
+    ${img ? `<a href="${safeImg}" target="_blank">` : ``}
+    <img
+      src="${safeImg}"
+      alt="product"
+      style="width:100%;height:170px;object-fit:cover;border-radius:12px;cursor:${img ? "pointer" : "default"};background:#eee"
+      referrerpolicy="no-referrer"
+      onerror="this.style.display='none'; this.parentElement && (this.parentElement.style.background='#eee');"
+    >
+    ${img ? `</a>` : ``}
+
+    <div style="font-weight:900;margin-top:10px">${esc(name)}</div>
+    <div style="margin-top:6px"><b>₹${esc(price)}</b></div>
+    <div class="muted" style="margin-top:6px">${esc(desc)}</div>
+
+    <div class="row" style="margin-top:10px;justify-content:flex-start">
+      <button onclick="selectProduct('${esc(name)}','${esc(price)}','${esc(img)}','${esc(desc)}')">Buy</button>
+      ${isAdmin ? `<button class="danger" onclick="delProduct('${d.id}')">Delete</button>` : ""}
+    </div>
+  `;
+
+  productsDiv.appendChild(el);
+});
     });
   });
 
@@ -407,6 +426,7 @@ window.open(waUrl, "_blank");
 
 </body>
 </html>
+
 
 
 
