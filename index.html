@@ -191,7 +191,16 @@ function showMain(){
 </div>
 
 <!-- Firebase (MODULE) -->
-<script type="module">
+<script type="module"> 
+  function safeUrl(p){
+  let u = (p?.imgUrl || p?.img || p?.image || p?.photo || "").trim();
+  if(!u) return "";
+  // space ho to encode
+  try { u = encodeURI(u); } catch(e) {}
+  // http ko https karo
+  if(u.startsWith("http://")) u = "https://" + u.slice(7);
+  return u;
+}
   const WHATSAPP_NUMBER = "919888727117";
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
   import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
@@ -398,6 +407,7 @@ window.open(waUrl, "_blank");
 
 </body>
 </html>
+
 
 
 
