@@ -296,18 +296,7 @@ function showMain(){
     >
     ${img ? `</a>` : ``}
 
-    <div style="font-weight:900;margin-top:10px">${esc(name)}</div>
-    <div style="margin-top:6px"><b>₹${esc(price)}</b></div>
-    <div class="muted" style="margin-top:6px">${esc(desc)}</div>
-
-    <div class="row" style="margin-top:10px;justify-content:flex-start">
-      <button onclick="selectProduct('${esc(name)}','${esc(price)}','${esc(img)}','${esc(desc)}')">Buy</button>
-      ${isAdmin ? `<button class="danger" onclick="delProduct('${d.id}')">Delete</button>` : ""}
-    </div>
-  `;
-
-  productsDiv.appendChild(el);
-});
+    
     });
   });
 
@@ -426,6 +415,7 @@ window.open(waUrl, "_blank");
 
 </body>
 </html>
+
 
 
 
