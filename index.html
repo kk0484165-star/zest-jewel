@@ -1,531 +1,142 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Zest Jewel Store</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zest Jewel</title>
 
-  <style>
-    :root{
-      --bg:#fff8f0;
-      --card:#ffffff;
-      --text:#111;
-      --muted:#666;
-      --brand:#d4af37;
-      --shadow: 0 8px 20px rgba(0,0,0,.10);
-      --radius:16px;
-    }
-    *{box-sizing:border-box}
-    body{font-family:Arial, sans-serif;background:var(--bg);margin:0;color:var(--text)}
-    header{
-      background:var(--brand);
-      color:#fff;
-      padding:14px 16px;
-      font-size:22px;
-      font-weight:800;
-      display:flex;
-      align-items:center;
-      gap:12px;
-    }
-    header img{
-      height:44px;width:44px;border-radius:12px;background:#fff;object-fit:contain;
-      box-shadow:0 2px 10px rgba(0,0,0,.2);
-    }
-    header .title{display:flex;flex-direction:column;line-height:1.1}
-    header .title small{font-size:12px;font-weight:600;opacity:.95}
+<style>
+body{margin:0;font-family:Arial;background:#fff8f0}
 
-    .wrap{max-width:1150px;margin:0 auto;padding:16px}
-    .card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px;margin:12px 0}
-    .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
-    input,button,textarea{
-      padding:10px 12px;border-radius:10px;border:1px solid #ddd;font-size:14px;
-      outline:none
-    }
-    input,textarea{flex:1;min-width:190px}
-    textarea{min-height:42px;resize:vertical}
-    button{border:none;background:green;color:#fff;cursor:pointer;font-weight:700}
-    button.secondary{background:#333}
-    button.danger{background:#d11a2a}
-    button:disabled{opacity:.55;cursor:not-allowed}
+/* WELCOME PAGE */
+#welcome{
+position:fixed;
+top:0;left:0;
+width:100%;height:100vh;
+background:#fff8f0;
+display:flex;
+flex-direction:column;
+align-items:center;
+justify-content:center;
+z-index:9999;
+}
+#welcome img{width:260px;margin-bottom:20px}
+#welcome button{padding:12px 25px;font-size:16px;background:green;color:#fff;border:none;border-radius:10px;cursor:pointer}
 
-    .grid{display:flex;flex-wrap:wrap;gap:14px;justify-content:flex-start}
-    .p{width:260px}
-    .p img{
-      width:100%;height:180px;object-fit:cover;border-radius:14px;background:#eee;
-      display:block;cursor:pointer
-    }
-    .priceTag{
-      display:inline-block;background:#fff;border:1px solid #eee;
-      padding:4px 10px;border-radius:999px;font-weight:800
-    }
-    .muted{color:var(--muted);font-size:12px}
-    .hide{display:none !important}
-
-    /* "pages" (single file routing) */
-    .page{display:none}
-    .page.active{display:block}
-
-    /* details gallery */
-    .thumbs{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
-    .thumbs img{width:70px;height:70px;border-radius:12px;object-fit:cover;background:#eee;border:1px solid #eee}
-    .badge{
-      display:inline-block;padding:6px 10px;border-radius:999px;background:#f3f3f3;font-size:12px;font-weight:700
-    }
-  </style>
+/* MAIN SITE */
+header{background:#d4af37;color:#fff;padding:15px;font-size:22px;font-weight:bold}
+.wrap{padding:15px;max-width:1100px;margin:auto}
+.card{background:#fff;padding:12px;border-radius:14px;box-shadow:0 5px 15px rgba(0,0,0,.1);margin-bottom:15px}
+.grid{display:flex;flex-wrap:wrap;gap:15px}
+.p{width:250px}
+.p img{width:100%;height:180px;object-fit:cover;border-radius:12px;background:#eee}
+button{padding:8px 12px;background:green;color:#fff;border:none;border-radius:8px;cursor:pointer}
+button.danger{background:red}
+.muted{color:#666;font-size:12px}
+.hide{display:none}
+</style>
 </head>
 
 <body>
-  <header>
-    <img src="LOGO.jpeg" alt="Zest Jewel Logo" onerror="this.style.display='none'">
-    <div class="title">
-      <div>Zest Jewel Store</div>
-      <small>Discover your beauty aura</small>
-    </div>
-  </header>
-
-  <div class="wrap">
-
-    <!-- TOP BAR -->
-    <div class="card row" style="justify-content:space-between">
-      <div>
-        <span class="badge">Public Products</span>
-        <span class="muted" style="margin-left:8px">Buy → Details → Order (WhatsApp)</span>
-      </div>
-      <div class="row" style="gap:8px">
-        <button class="secondary" onclick="goHome()">Home</button>
-        <button onclick="goProducts()">Products</button>
-      </div>
-    </div>
-
-    <!-- PAGE 1: PRODUCTS LIST -->
-    <div id="pageProducts" class="page active">
-      <div class="card">
-        <h2 style="margin:0 0 8px 0">Products</h2>
-        <div class="muted">Customers ko yahi products dikhेंगे (Firebase Firestore se).</div>
-      </div>
-
-      <div class="card">
-        <div id="adminBar" class="row" style="justify-content:space-between">
-          <div class="muted">Admin: <b id="adminEmail">Not logged in</b></div>
-          <div class="row">
-            <button class="secondary" onclick="toggleAdmin()">Admin Panel</button>
-          </div>
-        </div>
-
-        <!-- ADMIN PANEL (hidden by default) -->
-        <div id="adminPanel" class="hide" style="margin-top:12px">
-          <h3 style="margin:0 0 8px 0">Admin Login</h3>
-          <div class="row">
-            <input id="aemail" placeholder="Admin Email" autocomplete="username" />
-            <input id="apass" placeholder="Admin Password" type="password" autocomplete="current-password" />
-            <button onclick="adminLogin()">Login</button>
-            <button class="secondary" onclick="adminLogout()">Logout</button>
-          </div>
-          <div class="muted" id="authMsg" style="margin-top:6px"></div>
-
-          <hr style="border:none;border-top:1px solid #eee;margin:14px 0" />
-
-          <h3 style="margin:0 0 8px 0">Add Product (Admin Only)</h3>
-          <div class="muted">
-            Image URL direct hona chahiye (ending .jpg / .png / .webp).  
-            Multiple photos ke liye: <b>URLs comma ( , ) se separate</b> kar do.
-          </div>
-
-          <div class="row" style="margin-top:10px">
-            <input id="pname" placeholder="Product Name" />
-            <input id="pprice" type="number" placeholder="Price" />
-            <input id="pimg" placeholder="Image URL (single OR first)" />
-          </div>
-
-          <div class="row" style="margin-top:10px">
-            <input id="pimgs" placeholder="More Image URLs (comma separated) optional" />
-          </div>
-
-          <div class="row" style="margin-top:10px">
-            <textarea id="pdesc" placeholder="Description (optional)"></textarea>
-            <button onclick="addProduct()">Add Product</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div id="productsDiv" class="grid"></div>
-      </div>
-    </div>
-
-    <!-- PAGE 2: DETAILS + ORDER -->
-    <div id="pageDetails" class="page">
-      <div class="card row" style="justify-content:space-between">
-        <div>
-          <h2 style="margin:0">Product Details</h2>
-          <div class="muted">Details fill karke Order karo — WhatsApp msg auto open hoga.</div>
-        </div>
-        <div class="row">
-          <button class="secondary" onclick="goProducts()">Back</button>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="row" style="align-items:flex-start">
-          <div style="flex:1;min-width:260px">
-            <img id="dMainImg" src="" alt="product" style="width:100%;max-width:420px;height:280px;object-fit:cover;border-radius:16px;background:#eee" onclick="openMainImage()" />
-            <div class="thumbs" id="dThumbs"></div>
-          </div>
-
-          <div style="flex:2;min-width:260px">
-            <h3 id="dName" style="margin:0 0 6px 0">—</h3>
-            <div style="margin-bottom:10px"><span class="priceTag" id="dPrice">₹0</span></div>
-            <div class="muted" id="dDesc">—</div>
-
-            <hr style="border:none;border-top:1px solid #eee;margin:14px 0" />
-
-            <h3 style="margin:0 0 8px 0">Order / Enquiry</h3>
-            <div class="row">
-              <input id="custName" placeholder="Your Name" />
-              <input id="custPhone" placeholder="Mobile Number" />
-              <input id="custAddress" placeholder="Address (optional)" />
-            </div>
-
-            <div class="row" style="margin-top:10px">
-              <button onclick="submitOrder()">Order on WhatsApp</button>
-              <button class="secondary" onclick="goProducts()">Cancel</button>
-            </div>
-
-            <div class="muted" id="orderMsg" style="margin-top:8px"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- FIREBASE -->
-  <script type="module">
-    // ==== SETTINGS ====
-    const WHATSAPP_NUMBER = "919888727117"; // 91 + number (no + sign)
-    const firebaseConfig = {
-      apiKey: "AIzaSyDXRGjrOmlWGB5I3fZCBpFj-Rv_RLkHg2s",
-      authDomain: "zest-jewel.firebaseapp.com",
-      projectId: "zest-jewel",
-      storageBucket: "zest-jewel.firebasestorage.app",
-      messagingSenderId: "350610946972",
-      appId: "1:350610946972:web:8f550c0584350455712659",
-      measurementId: "G-LQ7KPDS6WY"
-    };
-
-    // ==== IMPORTS ====
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
-    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
-
-    // ==== INIT ====
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-
-    // ==== DOM ====
-    const pageProducts = document.getElementById("pageProducts");
-    const pageDetails  = document.getElementById("pageDetails");
-
-    const productsDiv = document.getElementById("productsDiv");
-    const adminPanel = document.getElementById("adminPanel");
-    const adminEmail = document.getElementById("adminEmail");
-    const authMsg = document.getElementById("authMsg");
-
-    const dMainImg = document.getElementById("dMainImg");
-    const dThumbs  = document.getElementById("dThumbs");
-    const dName    = document.getElementById("dName");
-    const dPrice   = document.getElementById("dPrice");
-    const dDesc    = document.getElementById("dDesc");
-    const orderMsg = document.getElementById("orderMsg");
-
-    // ==== STATE ====
-    let isAdmin = false;
-    let selected = null; // { id, name, price, desc, imgUrl, imgUrls[] }
-
-    // ==== HELPERS ====
-    function esc(s){
-      return (s ?? "").toString()
-        .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
-        .replaceAll('"',"&quot;").replaceAll("'","&#039;");
-    }
-
-    function normalizeImages(p){
-      // Support OLD fields too:
-      // imgUrl / imageUrl / img / pimg / photo / url / image
-      let main =
-        p.imgUrl || p.imageUrl || p.img || p.pimg || p.photo || p.url || p.image || "";
-
-      // Multi images support:
-      // imgUrls can be array OR string (comma separated)
-      let arr = [];
-      if (Array.isArray(p.imgUrls)) arr = p.imgUrls;
-      else if (typeof p.imgUrls === "string") arr = p.imgUrls.split(",").map(x => x.trim()).filter(Boolean);
-
-      // also accept p.images (array/string)
-      if (!arr.length && Array.isArray(p.images)) arr = p.images;
-      if (!arr.length && typeof p.images === "string") arr = p.images.split(",").map(x => x.trim()).filter(Boolean);
-
-      // if main not present, take first from arr
-      if (!main && arr.length) main = arr[0];
-
-      // ensure main is included in front
-      let merged = [];
-      if (main) merged.push(main);
-      for (const u of arr) if (u && u !== main) merged.push(u);
-
-      return { main, all: merged };
-    }
-
-    function showPage(which){
-      pageProducts.classList.remove("active");
-      pageDetails.classList.remove("active");
-      if (which === "details") pageDetails.classList.add("active");
-      else pageProducts.classList.add("active");
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-
-    // ==== NAV (exposed) ====
-    window.goHome = () => { showPage("products"); };
-    window.goProducts = () => { showPage("products"); };
-    window.toggleAdmin = () => { adminPanel.classList.toggle("hide"); };
-
-    // ==== AUTH ====
-    window.adminLogin = async () => {
-      authMsg.textContent = "";
-      const email = document.getElementById("aemail").value.trim();
-      const pass  = document.getElementById("apass").value.trim();
-      if(!email || !pass){
-        authMsg.textContent = "Email & Password required";
-        return;
-      }
-      try{
-        await signInWithEmailAndPassword(auth, email, pass);
-        authMsg.textContent = "Login success ✅";
-      }catch(e){
-        authMsg.textContent = "Login error: " + e.message;
-      }
-    };
-
-    window.adminLogout = async () => {
-      try{
-        await signOut(auth);
-        authMsg.textContent = "Logged out";
-      }catch(e){
-        authMsg.textContent = "Logout error: " + e.message;
-      }
-    };
-
-    onAuthStateChanged(auth, (user) => {
-      isAdmin = !!user;
-      adminEmail.textContent = user ? user.email : "Not logged in";
-      renderProducts(lastProductsCache);
-    });
-
-    // ==== FIRESTORE LISTEN ====
-    const productsRef = collection(db, "products");
-    const ordersRef   = collection(db, "orders");
-
-    let lastProductsCache = [];
-
-    const qProducts = query(productsRef, orderBy("createdAt","desc"));
-    onSnapshot(qProducts, (snap) => {
-      const list = [];
-      snap.forEach(d => list.push({ id: d.id, ...d.data() }));
-      lastProductsCache = list;
-      renderProducts(list);
-    });
-
-    function renderProducts(list){
-      productsDiv.innerHTML = "";
-      if(!list || !list.length){
-        productsDiv.innerHTML = "<div class='muted'>No products yet.</div>";
-        return;
-      }
-
-      for(const p of list){
-        const { main } = normalizeImages(p);
-
-        const el = document.createElement("div");
-        el.className = "card p";
-
-        const safeName = esc(p.name || p.title || "Product");
-        const safeDesc = esc(p.desc || p.description || "");
-        const priceVal = (p.price ?? p.mrp ?? 0);
-
-        el.innerHTML = `
-          <a href="${esc(main)}" target="_blank" style="text-decoration:none">
-            <img src="${esc(main)}" alt="product"
-              onerror="this.src=''; this.alt='Image not available'; this.style.background='#ddd';"
-              title="Click to open image" />
-          </a>
-
-          <div style="font-weight:900;margin-top:10px">${safeName}</div>
-          <div style="margin-top:6px"><b>₹${esc(priceVal)}</b></div>
-          <div class="muted" style="margin-top:6px;min-height:32px">${safeDesc}</div>
-
-          <div class="row" style="margin-top:10px;justify-content:flex-start">
-            <button onclick="openDetails('${esc(p.id)}')">Buy</button>
-            ${isAdmin ? `<button class="danger" onclick="delProduct('${esc(p.id)}')">Delete</button>` : ``}
-          </div>
-        `;
-        productsDiv.appendChild(el);
-      }
-    }
-
-    // ==== DETAILS PAGE ====
-    window.openDetails = (id) => {
-      const p = (lastProductsCache || []).find(x => x.id === id);
-      if(!p){ alert("Product not found"); return; }
-
-      const { main, all } = normalizeImages(p);
-
-      selected = {
-        id: p.id,
-        name: p.name || p.title || "Product",
-        price: p.price ?? p.mrp ?? 0,
-        desc: p.desc || p.description || "",
-        imgUrl: main,
-        imgUrls: all
-      };
-
-      dName.textContent = selected.name;
-      dPrice.textContent = "₹" + selected.price;
-      dDesc.textContent = selected.desc || "—";
-
-      dMainImg.src = selected.imgUrl || "";
-      dThumbs.innerHTML = "";
-
-      // thumbnails
-      (selected.imgUrls || []).forEach((u) => {
-        const t = document.createElement("img");
-        t.src = u;
-        t.alt = "thumb";
-        t.onerror = () => { t.style.display = "none"; };
-        t.onclick = () => { dMainImg.src = u; };
-        dThumbs.appendChild(t);
-      });
-
-      orderMsg.textContent = "";
-      showPage("details");
-    };
-
-    window.openMainImage = () => {
-      if(selected?.imgUrl) window.open(selected.imgUrl, "_blank");
-    };
-
-    // ==== ADMIN: ADD PRODUCT ====
-    window.addProduct = async () => {
-      if(!isAdmin){
-        alert("Admin login required");
-        return;
-      }
-      const name = document.getElementById("pname").value.trim();
-      const price = Number(document.getElementById("pprice").value);
-      const imgUrl = document.getElementById("pimg").value.trim();
-      const more = document.getElementById("pimgs").value.trim();
-      const desc = document.getElementById("pdesc").value.trim();
-
-      if(!name || !price){
-        alert("Name & Price required");
-        return;
-      }
-
-      // build imgUrls
-      let imgUrls = [];
-      if (more) imgUrls = more.split(",").map(x => x.trim()).filter(Boolean);
-      // If user put multiple in pimg too
-      if (imgUrl && imgUrl.includes(",")){
-        const parts = imgUrl.split(",").map(x => x.trim()).filter(Boolean);
-        if(parts.length){
-          // first becomes main
-          imgUrls = [...parts.slice(1), ...imgUrls];
-        }
-      }
-
-      try{
-        await addDoc(productsRef, {
-          name,
-          price,
-          desc,
-          imgUrl: (imgUrl && !imgUrl.includes(",")) ? imgUrl : (imgUrl.split(",")[0]?.trim() || ""),
-          imgUrls,
-          createdAt: serverTimestamp()
-        });
-
-        document.getElementById("pname").value = "";
-        document.getElementById("pprice").value = "";
-        document.getElementById("pimg").value = "";
-        document.getElementById("pimgs").value = "";
-        document.getElementById("pdesc").value = "";
-        alert("Product added ✅");
-      }catch(e){
-        alert("Add error: " + e.message);
-      }
-    };
-
-    window.delProduct = async (id) => {
-      if(!isAdmin){
-        alert("Admin login required");
-        return;
-      }
-      if(!confirm("Delete this product?")) return;
-      try{
-        await deleteDoc(doc(db, "products", id));
-      }catch(e){
-        alert("Delete error: " + e.message);
-      }
-    };
-
-    // ==== CUSTOMER: SUBMIT ORDER (WhatsApp + Firestore) ====
-    window.submitOrder = async () => {
-      if(!selected){
-        alert("Please Buy/Select a product first!");
-        return;
-      }
-      const nm = document.getElementById("custName").value.trim();
-      const ph = document.getElementById("custPhone").value.trim();
-      const ad = document.getElementById("custAddress").value.trim();
-
-      if(!nm || !ph){
-        alert("Name & phone required");
-        return;
-      }
-
-      // 1) Save to Firestore (optional but useful)
-      try{
-        await addDoc(ordersRef, {
-          customerName: nm,
-          customerPhone: ph,
-          address: ad || "",
-          productId: selected.id,
-          productName: selected.name,
-          price: selected.price,
-          imgUrl: selected.imgUrl || "",
-          status: "new",
-          createdAt: serverTimestamp()
-        });
-      }catch(e){
-        // even if Firestore fails, WhatsApp should still open
-        console.log("Order save error:", e);
-      }
-
-      // 2) WhatsApp message
-      const waText =
-        "Hello Zest Jewel!%0A%0A" +
-        "New Order Received ✅%0A%0A" +
-        "Customer Name: " + encodeURIComponent(nm) + "%0A" +
-        "Customer Mobile: " + encodeURIComponent(ph) + "%0A" +
-        "Address: " + encodeURIComponent(ad || "-") + "%0A%0A" +
-        "Product: " + encodeURIComponent(selected.name) + "%0A" +
-        "Price: ₹" + encodeURIComponent(String(selected.price)) + "%0A%0A" +
-        "Please confirm availability.";
-
-      const waUrl = "https://wa.me/" + WHATSAPP_NUMBER + "?text=" + waText;
-      window.open(waUrl, "_blank");
-
-      orderMsg.textContent = "WhatsApp opened ✅ (If popup blocked, allow popups).";
-    };
-  </script>
+
+<!-- WELCOME SCREEN -->
+<div id="welcome">
+  <img src="LOGO.jpeg">
+  <button onclick="enterStore()">Enter Store</button>
+</div>
+
+<!-- MAIN SITE -->
+<div id="mainSite">
+
+<header>Zest Jewel Store</header>
+
+<div class="wrap">
+
+<div class="card">
+<div class="grid" id="productsDiv"></div>
+</div>
+
+</div>
+</div>
+
+<script type="module">
+
+/* ==== CONFIG ==== */
+const WHATSAPP_NUMBER="919888727117";
+
+const firebaseConfig={
+apiKey:"AIzaSyDXRGjrOmlWGB5I3fZCBpFj-Rv_RLkHg2s",
+authDomain:"zest-jewel.firebaseapp.com",
+projectId:"zest-jewel",
+storageBucket:"zest-jewel.firebasestorage.app",
+messagingSenderId:"350610946972",
+appId:"1:350610946972:web:8f550c0584350455712659"
+};
+
+import {initializeApp} from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+import {getFirestore,collection,onSnapshot,query,orderBy} from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+const app=initializeApp(firebaseConfig);
+const db=getFirestore(app);
+
+const productsRef=collection(db,"products");
+const q=query(productsRef,orderBy("createdAt","desc"));
+
+function esc(s){
+return (s||"").toString()
+.replaceAll("&","&amp;")
+.replaceAll("<","&lt;")
+.replaceAll(">","&gt;")
+.replaceAll('"',"&quot;");
+}
+
+/* OLD + NEW IMAGE SUPPORT */
+function getMainImage(p){
+return p.imgUrl || p.img || p.image || p.photo || p.pimg || p.url || "";
+}
+
+const productsDiv=document.getElementById("productsDiv");
+
+onSnapshot(q,(snap)=>{
+productsDiv.innerHTML="";
+snap.forEach((d)=>{
+const p=d.data();
+const img=getMainImage(p);
+
+const el=document.createElement("div");
+el.className="card p";
+
+el.innerHTML=`
+<a href="${esc(img)}" target="_blank">
+<img src="${esc(img)}"
+onerror="this.src='LOGO.jpeg'"
+alt="product">
+</a>
+
+<div style="font-weight:bold;margin-top:8px">${esc(p.name||"Product")}</div>
+<div>₹${esc(p.price||0)}</div>
+<button onclick="buyProduct('${esc(p.name)}','${esc(p.price)}')">Buy</button>
+`;
+
+productsDiv.appendChild(el);
+});
+});
+
+window.buyProduct=(name,price)=>{
+const text=
+"Hello Zest Jewel!%0A%0A"+
+"Product: "+encodeURIComponent(name)+"%0A"+
+"Price: ₹"+encodeURIComponent(price);
+window.open("https://wa.me/"+WHATSAPP_NUMBER+"?text="+text,"_blank");
+};
+
+</script>
+
+<script>
+function enterStore(){
+document.getElementById("welcome").style.display="none";
+}
+</script>
+
 </body>
 </html>
