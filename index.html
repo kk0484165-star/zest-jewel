@@ -7,18 +7,7 @@
 
 <style>
 body{margin:0;font-family:Arial;background:#fff8f0}
-
-/* HEADER */
-header{
-background:#d4af37;
-color:#fff;
-padding:15px;
-font-size:22px;
-font-weight:bold;
-text-align:center;
-}
-
-/* WRAP */
+header{background:#d4af37;color:#fff;padding:15px;text-align:center;font-size:22px;font-weight:bold}
 .wrap{padding:15px;max-width:1100px;margin:auto}
 .card{background:#fff;padding:15px;border-radius:14px;box-shadow:0 5px 15px rgba(0,0,0,.1);margin-bottom:20px}
 .grid{display:flex;flex-wrap:wrap;gap:15px}
@@ -26,10 +15,10 @@ text-align:center;
 .p img{width:100%;height:180px;object-fit:cover;border-radius:12px;background:#eee}
 button{padding:8px 12px;background:green;color:#fff;border:none;border-radius:8px;cursor:pointer}
 button.danger{background:red}
+input,textarea{padding:8px;margin:6px 0;width:100%;border-radius:8px;border:1px solid #ccc}
 .hide{display:none}
-input,textarea{padding:8px;margin:5px 0;width:100%;border-radius:8px;border:1px solid #ccc}
 
-/* WELCOME */
+/* Welcome */
 #welcome{
 position:fixed;
 top:0;left:0;
@@ -39,18 +28,15 @@ display:flex;
 flex-direction:column;
 align-items:center;
 justify-content:center;
-z-index:99999;
+z-index:9999;
 }
 #welcome img{width:260px;margin-bottom:20px}
-
-/* DETAILS PAGE */
-#detailsPage{display:none}
 </style>
 </head>
 
 <body>
 
-<!-- WELCOME -->
+<!-- Welcome Screen -->
 <div id="welcome">
 <img src="LOGO.jpeg">
 <button onclick="enterStore()">Enter Store</button>
@@ -60,19 +46,16 @@ z-index:99999;
 
 <div class="wrap">
 
-<!-- PRODUCTS PAGE -->
+<!-- Products Page -->
 <div id="productsPage">
-
 <div class="card">
 <h2>Products</h2>
 <div id="productsDiv" class="grid"></div>
 </div>
-
 </div>
 
-<!-- DETAILS PAGE -->
-<div id="detailsPage">
-
+<!-- Details Page -->
+<div id="detailsPage" class="hide">
 <div class="card">
 <button onclick="backToProducts()">⬅ Back</button>
 <h2 id="dName"></h2>
@@ -86,20 +69,18 @@ z-index:99999;
 <textarea id="custAddress" placeholder="Address"></textarea>
 <button onclick="sendOrder()">Order on WhatsApp</button>
 </div>
-
 </div>
 
-<!-- ADMIN PANEL (BOTTOM ONLY FOR ADMIN) -->
-<div id="adminPanel" class="wrap hide">
+<!-- Admin Login (always visible at bottom) -->
 <div class="card">
-<h3>Admin Panel</h3>
+<h3>Admin Login</h3>
 <input id="aemail" placeholder="Email">
 <input id="apass" type="password" placeholder="Password">
 <button onclick="adminLogin()">Login</button>
 <button onclick="adminLogout()">Logout</button>
 
+<div id="adminTools" class="hide">
 <hr>
-
 <h4>Add Product</h4>
 <input id="pname" placeholder="Product Name">
 <input id="pprice" type="number" placeholder="Price">
@@ -107,6 +88,7 @@ z-index:99999;
 <input id="pdesc" placeholder="Description">
 <button onclick="addProduct()">Add Product</button>
 </div>
+
 </div>
 
 </div>
@@ -140,7 +122,7 @@ const productsDiv=document.getElementById("productsDiv");
 let selectedProduct=null;
 let isAdmin=false;
 
-/* SUPPORT OLD IMAGE FIELDS */
+/* OLD + NEW IMAGE SUPPORT */
 function getImage(p){
 return p.imgUrl || p.img || p.image || p.photo || p.pimg || p.url || "";
 }
@@ -169,8 +151,8 @@ productsDiv.appendChild(el);
 /* DETAILS */
 window.openDetails=(name,price,img,desc)=>{
 selectedProduct={name,price,img,desc};
-document.getElementById("productsPage").style.display="none";
-document.getElementById("detailsPage").style.display="block";
+document.getElementById("productsPage").classList.add("hide");
+document.getElementById("detailsPage").classList.remove("hide");
 document.getElementById("dName").innerText=name;
 document.getElementById("dPrice").innerText=price;
 document.getElementById("dImg").src=img;
@@ -178,8 +160,8 @@ document.getElementById("dDesc").innerText=desc;
 };
 
 window.backToProducts=()=>{
-document.getElementById("detailsPage").style.display="none";
-document.getElementById("productsPage").style.display="block";
+document.getElementById("detailsPage").classList.add("hide");
+document.getElementById("productsPage").classList.remove("hide");
 };
 
 /* WHATSAPP */
@@ -212,7 +194,7 @@ window.adminLogout=async()=>{await signOut(auth);};
 
 onAuthStateChanged(auth,(user)=>{
 isAdmin=!!user;
-document.getElementById("adminPanel").classList.toggle("hide",!isAdmin);
+document.getElementById("adminTools").classList.toggle("hide",!isAdmin);
 });
 
 window.addProduct=async()=>{
