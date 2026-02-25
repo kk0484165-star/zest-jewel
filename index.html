@@ -7,16 +7,27 @@
 
 <style>
 body{margin:0;font-family:Arial;background:#fff8f0}
-header{background:#d4af37;color:#fff;padding:15px;font-size:22px;font-weight:bold}
+
+/* HEADER */
+header{
+background:#d4af37;
+color:#fff;
+padding:15px;
+font-size:22px;
+font-weight:bold;
+text-align:center;
+}
+
+/* WRAP */
 .wrap{padding:15px;max-width:1100px;margin:auto}
-.card{background:#fff;padding:12px;border-radius:14px;box-shadow:0 5px 15px rgba(0,0,0,.1);margin-bottom:15px}
+.card{background:#fff;padding:15px;border-radius:14px;box-shadow:0 5px 15px rgba(0,0,0,.1);margin-bottom:20px}
 .grid{display:flex;flex-wrap:wrap;gap:15px}
 .p{width:250px}
 .p img{width:100%;height:180px;object-fit:cover;border-radius:12px;background:#eee}
 button{padding:8px 12px;background:green;color:#fff;border:none;border-radius:8px;cursor:pointer}
 button.danger{background:red}
-.muted{color:#666;font-size:12px}
 .hide{display:none}
+input,textarea{padding:8px;margin:5px 0;width:100%;border-radius:8px;border:1px solid #ccc}
 
 /* WELCOME */
 #welcome{
@@ -28,16 +39,18 @@ display:flex;
 flex-direction:column;
 align-items:center;
 justify-content:center;
-z-index:999999;
+z-index:99999;
 }
 #welcome img{width:260px;margin-bottom:20px}
-#welcome button{padding:12px 25px;font-size:16px}
+
+/* DETAILS PAGE */
+#detailsPage{display:none}
 </style>
 </head>
 
 <body>
 
-<!-- WELCOME PAGE -->
+<!-- WELCOME -->
 <div id="welcome">
 <img src="LOGO.jpeg">
 <button onclick="enterStore()">Enter Store</button>
@@ -47,27 +60,53 @@ z-index:999999;
 
 <div class="wrap">
 
+<!-- PRODUCTS PAGE -->
+<div id="productsPage">
+
+<div class="card">
+<h2>Products</h2>
+<div id="productsDiv" class="grid"></div>
+</div>
+
+</div>
+
+<!-- DETAILS PAGE -->
+<div id="detailsPage">
+
+<div class="card">
+<button onclick="backToProducts()">⬅ Back</button>
+<h2 id="dName"></h2>
+<img id="dImg" style="width:100%;max-width:400px;height:250px;object-fit:cover;border-radius:12px;background:#eee">
+<p><b>Price:</b> ₹<span id="dPrice"></span></p>
+<p id="dDesc"></p>
+
+<h3>Order Details</h3>
+<input id="custName" placeholder="Your Name">
+<input id="custPhone" placeholder="Mobile Number">
+<textarea id="custAddress" placeholder="Address"></textarea>
+<button onclick="sendOrder()">Order on WhatsApp</button>
+</div>
+
+</div>
+
+<!-- ADMIN PANEL (BOTTOM ONLY FOR ADMIN) -->
+<div id="adminPanel" class="wrap hide">
 <div class="card">
 <h3>Admin Panel</h3>
-<div>
 <input id="aemail" placeholder="Email">
 <input id="apass" type="password" placeholder="Password">
 <button onclick="adminLogin()">Login</button>
 <button onclick="adminLogout()">Logout</button>
-</div>
-<div class="muted" id="authMsg"></div>
 
 <hr>
 
-<h3>Add Product</h3>
+<h4>Add Product</h4>
 <input id="pname" placeholder="Product Name">
-<input id="pprice" placeholder="Price" type="number">
+<input id="pprice" type="number" placeholder="Price">
 <input id="pimg" placeholder="Image URL">
-<button onclick="addProduct()">Add</button>
+<input id="pdesc" placeholder="Description">
+<button onclick="addProduct()">Add Product</button>
 </div>
-
-<div class="card">
-<div id="productsDiv" class="grid"></div>
 </div>
 
 </div>
@@ -97,18 +136,11 @@ const productsRef=collection(db,"products");
 const q=query(productsRef,orderBy("createdAt","desc"));
 
 const productsDiv=document.getElementById("productsDiv");
-const authMsg=document.getElementById("authMsg");
 
+let selectedProduct=null;
 let isAdmin=false;
 
-function esc(s){
-return (s||"").toString()
-.replaceAll("&","&amp;")
-.replaceAll("<","&lt;")
-.replaceAll(">","&gt;");
-}
-
-/* OLD + NEW IMAGE SUPPORT */
+/* SUPPORT OLD IMAGE FIELDS */
 function getImage(p){
 return p.imgUrl || p.img || p.image || p.photo || p.pimg || p.url || "";
 }
@@ -123,52 +155,78 @@ const el=document.createElement("div");
 el.className="card p";
 
 el.innerHTML=`
-<a href="${esc(img)}" target="_blank">
-<img src="${esc(img)}"
-onerror="this.src='LOGO.jpeg'"
-alt="product">
-</a>
-<div style="font-weight:bold;margin-top:8px">${esc(p.name||"Product")}</div>
-<div>₹${esc(p.price||0)}</div>
-<button onclick="buy('${esc(p.name)}','${esc(p.price)}')">Buy</button>
-${isAdmin?`<button class="danger" onclick="del('${d.id}')">Delete</button>`:""}
+<img src="${img}" onerror="this.src='LOGO.jpeg'">
+<div><b>${p.name||"Product"}</b></div>
+<div>₹${p.price||0}</div>
+<button onclick="openDetails('${p.name}','${p.price}','${img}','${p.desc||""}')">Buy</button>
+${isAdmin?`<button class="danger" onclick="delProduct('${d.id}')">Delete</button>`:""}
 `;
 
 productsDiv.appendChild(el);
 });
 });
 
-window.buy=(name,price)=>{
-const msg="Hello Zest Jewel!%0AProduct: "+encodeURIComponent(name)+"%0APrice: ₹"+encodeURIComponent(price);
+/* DETAILS */
+window.openDetails=(name,price,img,desc)=>{
+selectedProduct={name,price,img,desc};
+document.getElementById("productsPage").style.display="none";
+document.getElementById("detailsPage").style.display="block";
+document.getElementById("dName").innerText=name;
+document.getElementById("dPrice").innerText=price;
+document.getElementById("dImg").src=img;
+document.getElementById("dDesc").innerText=desc;
+};
+
+window.backToProducts=()=>{
+document.getElementById("detailsPage").style.display="none";
+document.getElementById("productsPage").style.display="block";
+};
+
+/* WHATSAPP */
+window.sendOrder=()=>{
+const nm=document.getElementById("custName").value;
+const ph=document.getElementById("custPhone").value;
+const ad=document.getElementById("custAddress").value;
+
+if(!nm||!ph){alert("Fill Name & Phone");return;}
+
+const msg=
+"Hello Zest Jewel!%0A%0A"+
+"Customer: "+encodeURIComponent(nm)+"%0A"+
+"Phone: "+encodeURIComponent(ph)+"%0A"+
+"Address: "+encodeURIComponent(ad)+"%0A%0A"+
+"Product: "+encodeURIComponent(selectedProduct.name)+"%0A"+
+"Price: ₹"+encodeURIComponent(selectedProduct.price);
+
 window.open("https://wa.me/"+WHATSAPP_NUMBER+"?text="+msg,"_blank");
 };
 
+/* ADMIN */
 window.adminLogin=async()=>{
 const email=document.getElementById("aemail").value;
 const pass=document.getElementById("apass").value;
-try{
 await signInWithEmailAndPassword(auth,email,pass);
-authMsg.textContent="Login Success";
-}catch(e){authMsg.textContent=e.message;}
 };
 
 window.adminLogout=async()=>{await signOut(auth);};
 
 onAuthStateChanged(auth,(user)=>{
 isAdmin=!!user;
+document.getElementById("adminPanel").classList.toggle("hide",!isAdmin);
 });
 
 window.addProduct=async()=>{
-if(!isAdmin){alert("Login first");return;}
-const name=document.getElementById("pname").value;
-const price=document.getElementById("pprice").value;
-const img=document.getElementById("pimg").value;
+if(!isAdmin)return alert("Login first");
 await addDoc(productsRef,{
-name,price,imgUrl:img,createdAt:serverTimestamp()
+name:document.getElementById("pname").value,
+price:document.getElementById("pprice").value,
+imgUrl:document.getElementById("pimg").value,
+desc:document.getElementById("pdesc").value,
+createdAt:serverTimestamp()
 });
 };
 
-window.del=async(id)=>{
+window.delProduct=async(id)=>{
 if(!isAdmin)return;
 await deleteDoc(doc(db,"products",id));
 };
