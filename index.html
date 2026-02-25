@@ -7,23 +7,6 @@
 
 <style>
 body{margin:0;font-family:Arial;background:#fff8f0}
-
-/* WELCOME PAGE */
-#welcome{
-position:fixed;
-top:0;left:0;
-width:100%;height:100vh;
-background:#fff8f0;
-display:flex;
-flex-direction:column;
-align-items:center;
-justify-content:center;
-z-index:9999;
-}
-#welcome img{width:260px;margin-bottom:20px}
-#welcome button{padding:12px 25px;font-size:16px;background:green;color:#fff;border:none;border-radius:10px;cursor:pointer}
-
-/* MAIN SITE */
 header{background:#d4af37;color:#fff;padding:15px;font-size:22px;font-weight:bold}
 .wrap{padding:15px;max-width:1100px;margin:auto}
 .card{background:#fff;padding:12px;border-radius:14px;box-shadow:0 5px 15px rgba(0,0,0,.1);margin-bottom:15px}
@@ -34,34 +17,63 @@ button{padding:8px 12px;background:green;color:#fff;border:none;border-radius:8p
 button.danger{background:red}
 .muted{color:#666;font-size:12px}
 .hide{display:none}
+
+/* WELCOME */
+#welcome{
+position:fixed;
+top:0;left:0;
+width:100%;height:100vh;
+background:#fff8f0;
+display:flex;
+flex-direction:column;
+align-items:center;
+justify-content:center;
+z-index:999999;
+}
+#welcome img{width:260px;margin-bottom:20px}
+#welcome button{padding:12px 25px;font-size:16px}
 </style>
 </head>
 
 <body>
 
-<!-- WELCOME SCREEN -->
+<!-- WELCOME PAGE -->
 <div id="welcome">
-  <img src="LOGO.jpeg">
-  <button onclick="enterStore()">Enter Store</button>
+<img src="LOGO.jpeg">
+<button onclick="enterStore()">Enter Store</button>
 </div>
-
-<!-- MAIN SITE -->
-<div id="mainSite">
 
 <header>Zest Jewel Store</header>
 
 <div class="wrap">
 
 <div class="card">
-<div class="grid" id="productsDiv"></div>
+<h3>Admin Panel</h3>
+<div>
+<input id="aemail" placeholder="Email">
+<input id="apass" type="password" placeholder="Password">
+<button onclick="adminLogin()">Login</button>
+<button onclick="adminLogout()">Logout</button>
+</div>
+<div class="muted" id="authMsg"></div>
+
+<hr>
+
+<h3>Add Product</h3>
+<input id="pname" placeholder="Product Name">
+<input id="pprice" placeholder="Price" type="number">
+<input id="pimg" placeholder="Image URL">
+<button onclick="addProduct()">Add</button>
 </div>
 
+<div class="card">
+<div id="productsDiv" class="grid"></div>
 </div>
+
 </div>
 
 <script type="module">
 
-/* ==== CONFIG ==== */
 const WHATSAPP_NUMBER="919888727117";
 
 const firebaseConfig={
@@ -74,34 +86,38 @@ appId:"1:350610946972:web:8f550c0584350455712659"
 };
 
 import {initializeApp} from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
-import {getFirestore,collection,onSnapshot,query,orderBy} from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+import {getAuth,signInWithEmailAndPassword,signOut,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
+import {getFirestore,collection,addDoc,onSnapshot,query,orderBy,serverTimestamp,deleteDoc,doc} from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 
 const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
 const db=getFirestore(app);
 
 const productsRef=collection(db,"products");
 const q=query(productsRef,orderBy("createdAt","desc"));
 
+const productsDiv=document.getElementById("productsDiv");
+const authMsg=document.getElementById("authMsg");
+
+let isAdmin=false;
+
 function esc(s){
 return (s||"").toString()
 .replaceAll("&","&amp;")
 .replaceAll("<","&lt;")
-.replaceAll(">","&gt;")
-.replaceAll('"',"&quot;");
+.replaceAll(">","&gt;");
 }
 
 /* OLD + NEW IMAGE SUPPORT */
-function getMainImage(p){
+function getImage(p){
 return p.imgUrl || p.img || p.image || p.photo || p.pimg || p.url || "";
 }
-
-const productsDiv=document.getElementById("productsDiv");
 
 onSnapshot(q,(snap)=>{
 productsDiv.innerHTML="";
 snap.forEach((d)=>{
 const p=d.data();
-const img=getMainImage(p);
+const img=getImage(p);
 
 const el=document.createElement("div");
 el.className="card p";
@@ -112,22 +128,49 @@ el.innerHTML=`
 onerror="this.src='LOGO.jpeg'"
 alt="product">
 </a>
-
 <div style="font-weight:bold;margin-top:8px">${esc(p.name||"Product")}</div>
 <div>₹${esc(p.price||0)}</div>
-<button onclick="buyProduct('${esc(p.name)}','${esc(p.price)}')">Buy</button>
+<button onclick="buy('${esc(p.name)}','${esc(p.price)}')">Buy</button>
+${isAdmin?`<button class="danger" onclick="del('${d.id}')">Delete</button>`:""}
 `;
 
 productsDiv.appendChild(el);
 });
 });
 
-window.buyProduct=(name,price)=>{
-const text=
-"Hello Zest Jewel!%0A%0A"+
-"Product: "+encodeURIComponent(name)+"%0A"+
-"Price: ₹"+encodeURIComponent(price);
-window.open("https://wa.me/"+WHATSAPP_NUMBER+"?text="+text,"_blank");
+window.buy=(name,price)=>{
+const msg="Hello Zest Jewel!%0AProduct: "+encodeURIComponent(name)+"%0APrice: ₹"+encodeURIComponent(price);
+window.open("https://wa.me/"+WHATSAPP_NUMBER+"?text="+msg,"_blank");
+};
+
+window.adminLogin=async()=>{
+const email=document.getElementById("aemail").value;
+const pass=document.getElementById("apass").value;
+try{
+await signInWithEmailAndPassword(auth,email,pass);
+authMsg.textContent="Login Success";
+}catch(e){authMsg.textContent=e.message;}
+};
+
+window.adminLogout=async()=>{await signOut(auth);};
+
+onAuthStateChanged(auth,(user)=>{
+isAdmin=!!user;
+});
+
+window.addProduct=async()=>{
+if(!isAdmin){alert("Login first");return;}
+const name=document.getElementById("pname").value;
+const price=document.getElementById("pprice").value;
+const img=document.getElementById("pimg").value;
+await addDoc(productsRef,{
+name,price,imgUrl:img,createdAt:serverTimestamp()
+});
+};
+
+window.del=async(id)=>{
+if(!isAdmin)return;
+await deleteDoc(doc(db,"products",id));
 };
 
 </script>
